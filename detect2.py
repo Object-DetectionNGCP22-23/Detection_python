@@ -11,6 +11,7 @@ from time import sleep
 import utils
 
 
+
 def run() -> None:
 	cap = cv2.VideoCapture(0)
 	cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
@@ -21,16 +22,44 @@ def run() -> None:
 	detection_options = processor.DetectionOptions(max_results=3, score_threshold=0.3)
 	options = vision.ObjectDetectorOptions(base_options=base_options, detection_options=detection_options)
 	detector = vision.ObjectDetector.create_from_options(options)
+	
 
+	#declare visualization parameters
+	row_size = 20  # pixels
+	left_margin = 24  # pixels
+	right_margin = 300
+	text_color = (0, 0, 255)  # red
+	font_size = 1
+	font_thickness = 1
+	fps_avg_frame_count = 10
+	counter, fps = 0, 0
+	start_time = time.time()
+	
+	distSensor = PiicoDev_VL53L1X()
 	while cap.isOpened():
-		#sensor
-		distSensor = PiicoDev_VL53L1X()
-
-		dist = distSensor.read()  # read the distance in millimetres
-		print(str(dist) + " mm")  # convert the number to a string and print
-		sleep(0.1)
+		#sensor################################################################
 		success, image = cap.read()
-		########################################################
+		dist = distSensor.read()  # read the distance in millimetres
+
+		
+		distance_text = 'Distance = {:.1f}'.format(dist) + 'mm'
+		text_location = (left_margin, row_size)
+		cv2.putText(image, distance_text, text_location, cv2.FONT_HERSHEY_PLAIN, font_size, text_color, font_thickness)
+		
+		#sleep(0.1)
+		#FPS#######################################################
+		counter += 1
+		if counter % fps_avg_frame_count == 0:
+			end_time = time.time()
+			fps = fps_avg_frame_count / (end_time - start_time)
+			start_time = time.time()
+
+		# Show the FPS
+		fps_text = 'FPS = {:.1f}'.format(fps)
+		text_location = (right_margin, row_size)
+		cv2.putText(image, fps_text, text_location, cv2.FONT_HERSHEY_PLAIN, font_size, text_color, font_thickness)
+		
+		############################################################
 
 		input_tensor = vision.TensorImage.create_from_array(image)
 		detection_result = detector.detect(input_tensor)
