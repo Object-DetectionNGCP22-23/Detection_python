@@ -1,6 +1,6 @@
 # Detection_python
 
-detect.py == NO DISTANCE MODEL
+detect.py == NO DISTANCE MODEL \n
 detect2.py == INCORPORATES OBJ DETECTION + FPS + DISTANCE MODEL
 
 run by terminal:
