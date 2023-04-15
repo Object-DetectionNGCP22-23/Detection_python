@@ -32,38 +32,38 @@ def run() -> None:
 	while cap.isOpened():
 		success, image = cap.read()
 		counter += 1
+		image = cv2.flip(image, 1)
+
+		# Convert the image from BGR to RGB as required by the TFLite model.
+		rgb_image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+		# Create a TensorImage object from the RGB image.
+		input_tensor = vision.TensorImage.create_from_array(rgb_image)
+
+		# Run object detection estimation using the model.
+		detection_result = detector.detect(input_tensor)
+
+		# Draw keypoints and edges on input image
+		image = utils.visualize(image, detection_result)
+
+		# Calculate the FPS
 		if counter % fps_avg_frame_count == 0:
-			end_time = time.time()
-			fps = fps_avg_frame_count / (end_time - start_time)
-			start_time = time.time()
+		  end_time = time.time()
+		  fps = fps_avg_frame_count / (end_time - start_time)
+		  start_time = time.time()
 
 		# Show the FPS
 		fps_text = 'FPS = {:.1f}'.format(fps)
 		text_location = (left_margin, row_size)
-		cv2.putText(image, fps_text, text_location, cv2.FONT_HERSHEY_PLAIN, font_size, text_color, font_thickness)
-		
-		input_tensor = vision.TensorImage.create_from_array(image)
-		detection_result = detector.detect(input_tensor)
-		#image = utils.visualize(image, detection_result)
-		numObj = len(detection_result.detections)
-		for i  in range(numObj):
-			label_halfx = detection_result.detections[i].bounding_box.width//2
-			label_halfy = detection_result.detections[i].bounding_box.height//2
-			label_x = label_halfx + detection_result.detections[i].bounding_box.origin_x
-			label_y = label_halfy + detection_result.detections[i].bounding_box.origin_y
+		cv2.putText(image, fps_text, text_location, cv2.FONT_HERSHEY_PLAIN,
+					font_size, text_color, font_thickness)
 
-			# Format xmin, xmax, ymin, ymax, and class ground truth labeled data for DisNET.tflite 
-			# put that ^ data into a numpy array and DisNET.predict(np.array), and DONE
-			 
-			cv2.putText(image, "L", (label_x,label_y), cv2.FONT_HERSHEY_PLAIN,10,(0,0,255),10)
-			# In this ^ add a distance: ‘12.3456789 inches’ statement
-
+		# Stop the program if the ESC key is pressed.
 		if cv2.waitKey(1) == 27:
-			break
+		  break
 		cv2.imshow('object_detector', image)
 
 	cap.release()
 	cv2.destroyAllWindows()
 
 run()
-
