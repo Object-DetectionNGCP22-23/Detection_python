@@ -14,7 +14,7 @@ def run() -> None:
 	
 	#CHANGE NAME OF FILE YOU'RE USING HERE AND SET USE_CORAL TO TRUE IF USING EDGETPU LINE 16
 	base_options = core.BaseOptions(file_name="android_edgetpu.tflite", use_coral=True, num_threads=4)
-	detection_options = processor.DetectionOptions(max_results=3, score_threshold=0.3)
+	detection_options = processor.DetectionOptions(max_results=5, score_threshold=0.3)
 	options = vision.ObjectDetectorOptions(base_options=base_options, detection_options=detection_options)
 	detector = vision.ObjectDetector.create_from_options(options)
 	
